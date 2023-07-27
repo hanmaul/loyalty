@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AdtController;
+use App\Http\Controllers\ApController;
 use App\Http\Controllers\TestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -39,6 +40,14 @@ Route::middleware('auth')->group(function () {
 });
 
 Route::get('/adt/{token}/{custid}', [AdtController::class, 'index']);
+Route::get('/ap/{token}/{custid}', [ApController::class, 'index']);
+Route::get('/test/{token}/{custid}', [TestController::class, 'index']);
 
+Route::get('/test', function () {
+    return Inertia::render('Test');
+});
+Route::get('/card', function () {
+    return Inertia::render('Card');
+});
 
 require __DIR__.'/auth.php';

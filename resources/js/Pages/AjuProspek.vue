@@ -2,19 +2,18 @@
 import BannerForm from '@/Components/Loyalty/BannerForm.vue';
 import axios from 'axios';
 axios.defaults.baseURL = 'http://mobilekamm.ddns.net:8065/';
-import { ref, onMounted, watch, reactive, watchEffect, onUpdated, onBeforeUpdate, onBeforeMount, vModelSelect } from 'vue';
+import { ref, onMounted, watch, reactive, watchEffect, onUpdated, onBeforeUpdate, onBeforeMount } from 'vue';
 import Swal from 'sweetalert2';
 
 onMounted(() => {
-    getCust()
     getProvinsi()
     getJaminan()
 })
 
 //v-model
 const model = reactive({
-    no_referensi: '',
-    nama_konsumen: '',
+    no_hp: '',
+    nama_med: '',
     alamat: '',
     provinsi: '',
     kabupaten: '',
@@ -32,54 +31,8 @@ const model = reactive({
 })
 
 // ------------------------------------  Get Data ------------------------------------------------------------------------------------------------------------------------------------------
+
 const params = defineProps(['token', 'custid'])
-
-const dataCust = ref({})
-const getCust = () => {
-    dataCust.value = {}
-    const getBody = new FormData()
-    getBody.append('custid', params.custid)
-    axios.post(`fapi_uat/getajuann?key=${params.token}`, getBody
-    ).then(res => {
-        dataCust.value = res.data
-        showCust()
-    }).catch(err => {
-        alert(`Gagal mengambil data customer!\n\nError: ${err}`)
-    })
-}
-
-const showCust = () => {
-    dataCust.value.map((m) => {
-        model.no_referensi = m.Ref_code,
-            model.nama_konsumen = m.nama_lengkap,
-            model.alamat = m.alamat_lengkap,
-            model.provinsi = m.provinsi,
-            model.kabupaten = m.kabupaten,
-            model.kecamatan = m.kecamatan,
-            model.kelurahan = m.kelurahan,
-            model.kode_pos = m.kode_pos,
-            model.no_polisi = m.no_polisi,
-            model.jaminan = m.Kendaraan,
-            model.merk = m.Merk,
-            model.tipe = m.Type,
-            model.tenor = m.Tenor
-    })
-    dataCust.value.map((m) => {
-        if (m.Dana == null) {
-            model.dana = m.Dana
-        } else if (m.Dana.includes(".0")) {
-            model.dana = m.Dana.replace(/\B(?=(\d{3})+(?!\d))/g, ",").slice(0, - 2)
-        } else {
-            model.dana = m.Dana.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-        }
-    })
-}
-
-// watchEffect(() => {
-//     if (model.dana.includes(".0")) {
-//         model.dana = model.dana.slice(0, - 2)
-//     }
-// })
 
 // ------------------------------------  Dropdown Alamat ------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -302,59 +255,23 @@ watch(() => [model.dana, model.tenor], () => {
 })
 
 // ------------------------------------  Simpan Data -------------------------------------------------------------------------------------------------------------
-
-const saveCust = () => {
+const saveProspect = () => {
     const formCust = new FormData()
-    formCust.append('referal', model.no_referensi)
-    formCust.append('no_polisi', model.no_polisi)
     formCust.append('custid', params.custid)
+    formCust.append('nohp', model.no_hp)
+    formCust.append('kabkota', model.kabupaten)
+    formCust.append('propinsi', model.provinsi)
+    formCust.append('nama_med', model.nama_med)
     formCust.append('kendaraan', model.jaminan)
     formCust.append('merk', model.merk)
     formCust.append('type', model.tipe)
     formCust.append('dana', model.dana.split(',').join(''))
     formCust.append('tenor', model.tenor)
-    formCust.append('provinsi', model.provinsi)
-    formCust.append('kabupaten', model.kabupaten)
-    formCust.append('tenor', model.tenor)
-    formCust.append('provinsi', model.provinsi)
-    formCust.append('kabupaten', model.kabupaten)
-    formCust.append('alamat_dom', model.alamat)
-    formCust.append('nm_lengkap', model.nama_konsumen)
     formCust.append('kecamatan', model.kecamatan)
     formCust.append('kelurahan', model.kelurahan)
-    formCust.append('kodepos', model.kode_pos)
-    axios.post(`fapi_uat/newajuannn1?key=${params.token}`, formCust
-    ).then(res => {
-        const data = res.data
-        console.log(data)
-        alert(`Berhasil menyimpan data`)
-        getCust()
-    }).catch(err => {
-        alert(`Gagal menyimpan data\n\nError:${err}`)
-    })
-}
-
-const updateCust = () => {
-    const formCust = new FormData()
-    formCust.append('referal', model.no_referensi)
+    formCust.append('kdpos', model.kode_pos)
     formCust.append('no_polisi', model.no_polisi)
-    formCust.append('custid', params.custid)
-    formCust.append('kendaraan', model.jaminan)
-    formCust.append('merk', model.merk)
-    formCust.append('type', model.tipe)
-    formCust.append('dana', model.dana.split(',').join(''))
-    formCust.append('tenor', model.tenor)
-    formCust.append('provinsi', model.provinsi)
-    formCust.append('kabupaten', model.kabupaten)
-    formCust.append('tenor', model.tenor)
-    formCust.append('provinsi', model.provinsi)
-    formCust.append('kabupaten', model.kabupaten)
-    formCust.append('alamat_dom', model.alamat)
-    formCust.append('nm_lengkap', model.nama_konsumen)
-    formCust.append('kecamatan', model.kecamatan)
-    formCust.append('kelurahan', model.kelurahan)
-    formCust.append('kodepos', model.kode_pos)
-    axios.post(`fapi_uat/upnewajuannn1?key=${params.token}`, formCust
+    axios.post(`fapi_uat/uploadmediatorn2?key=${params.token}`, formCust
     ).then(res => {
         const data = res.data
         console.log(data)
@@ -365,11 +282,11 @@ const updateCust = () => {
             timer: 1500
         })
     }).catch(err => {
-        alert(`Gagal mengubah data\n\nError:${err}`)
+        alert(`Gagal menyimpan data\n\nError:${err}`)
     })
 }
-</script>
 
+</script>
 <template>
     <BannerForm></BannerForm>
     <div>
@@ -379,29 +296,16 @@ const updateCust = () => {
                 <form action="#">
                     <div class="grid gap-4 sm:grid-cols-2 sm:gap-6">
                         <div class="sm:col-span-2">
-                            <!-- <h1>Provinsi: {{ model.provinsi }}</h1>
-                            <h1>Kabupaten: {{ model.kabupaten }}</h1>
-                            <h1>Kecamatan: {{ model.kecamatan }}</h1>
-                            <h1>Kelurahan: {{ model.kelurahan }}</h1>
-                            <h1>Kode Pos: {{ model.kode_pos }}</h1>
-                            <br>
-                            <h1>Jaminan: {{ model.jaminan }}</h1>
-                            <h1>Merk: {{ model.merk }}</h1>
-                            <h1>Tipe: {{ model.tipe }}</h1>
-                            <h1>Tahun: {{ model.tahun }}</h1><br>
-                            <h1>Dana: {{ model.dana }}</h1>
-                            <h1>Tenor: {{ model.tenor }}</h1>
-                            <h1>Cicilan: {{ model.cicilan }}</h1><br> -->
                             <label for="no_ref" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">No.
-                                Referensi</label>
-                            <input type="text" name="name" id="no_ref" v-model="model.no_referensi"
+                                Telp/HP Prospek</label>
+                            <input type="text" name="name" id="no_ref" v-model="model.no_hp"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="ketik no ref manual di sini" required="">
                         </div>
                         <div class="w-full">
                             <label for="nama" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama
                                 Konsumen</label>
-                            <input type="text" name="brand" id="nama" v-model="model.nama_konsumen"
+                            <input type="text" name="brand" id="nama" v-model="model.nama_med"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
                                 placeholder="Isi sesuai dengan KTP" required="">
                         </div>
@@ -415,7 +319,8 @@ const updateCust = () => {
                         <div>
                             <label for="provinsi"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Provinsi</label>
-                            <select @change="[model.kabupaten = null, model.kecamatan = null, model.kelurahan = null]" id="provinsi" v-model="model.provinsi"
+                            <select @change="[model.kabupaten = null, model.kecamatan = null, model.kelurahan = null]"
+                                id="provinsi" v-model="model.provinsi"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option value="" disabled selected>Pilih Provinsi</option>
                                 <option :value="data.PROPINSI" v-for="(data, index) in daftarProvinsi" :key="index">
@@ -427,7 +332,8 @@ const updateCust = () => {
                             <label for="kabupaten" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kota
                                 /
                                 Kabupaten</label>
-                            <select @change="[model.kecamatan = null, model.kelurahan = null]" id="kabupaten" v-model="model.kabupaten"
+                            <select @change="[model.kecamatan = null, model.kelurahan = null]" id="kabupaten"
+                                v-model="model.kabupaten"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option value="" disabled selected>Pilih Kabupaten</option>
                                 <option :value="data.KABUPATEN" v-for="(data, index) in daftarKabupaten" :key="index">
@@ -483,7 +389,9 @@ const updateCust = () => {
                         <div>
                             <label for="merk"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Merk</label>
-                            <select @change="[model.tipe = null, model.dana = null, model.tenor = null, model.cicilan = null]" id="merk" v-model="model.merk"
+                            <select
+                                @change="[model.tipe = null, model.dana = null, model.tenor = null, model.cicilan = null]"
+                                id="merk" v-model="model.merk"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option value="" disabled selected>Pilih Merk</option>
                                 <option :value="data.Type" v-for="data in daftarMerk">{{ data.Type }}</option>
@@ -492,7 +400,8 @@ const updateCust = () => {
                         <div>
                             <label for="tipe"
                                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Tipe</label>
-                            <select @change="[model.dana = null, model.tenor = null, model.cicilan = null]" id="tipe" v-model="model.tipe"
+                            <select @change="[model.dana = null, model.tenor = null, model.cicilan = null]" id="tipe"
+                                v-model="model.tipe"
                                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                                 <option value="" disabled selected>Pilih Tipe</option>
                                 <option :value="data.TYPE" v-for="data in daftarTipe">{{ data.TYPE }}</option>
@@ -532,19 +441,10 @@ const updateCust = () => {
                                 disabled>
                         </div>
                     </div>
-                    <div class="pt-6">
-                        <template v-if="dataCust && dataCust.length <= 0">
-                            <button type="submit" @click="saveCust()"
-                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                SIMPAN
-                            </button>
-                        </template>
-                        <template v-else>
-                            <button type="submit" @click="updateCust()"
-                                class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-                                SIMPAN
-                            </button>
-                        </template>
+                    <div class="pt-6"><button type="submit" @click="saveProspect()"
+                            class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+                            SIMPAN
+                        </button>
                     </div>
                 </form>
             </div>
