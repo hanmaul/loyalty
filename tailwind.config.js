@@ -14,6 +14,9 @@ module.exports = {
     theme: {
         colors: {
             'sky': '#0369a1',
+            'kamm-blue':'#3498db',
+            'kamm-soft-blue':'#8cc2e6',
+            'kamm-red':'#8f3232'
         },
         extend: {
             fontFamily: {
